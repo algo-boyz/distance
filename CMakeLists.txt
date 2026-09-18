@@ -14,7 +14,7 @@ endif()
 # Find OpenCV (required components)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui videoio dnn)
 
-# Optional: ONNX Runtime for better YOLO performance
+# Optional: ONNX Runtime for better YOLO26 performance
 # Install eg: brew install onnxruntime
 # Or build from source with CoreML EP
 option(USE_ONNXRUNTIME "Use ONNX Runtime instead of OpenCV DNN" OFF)

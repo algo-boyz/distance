@@ -2,7 +2,7 @@
 
 C++ translation of [kemalkilicaslan/Vehicle-Distance-Measurement-System](https://github.com/kemalkilicaslan/Vehicle-Distance-Measurement-System).
 
-Object detection is performed with **OpenCV DNN** on **ONNX** models exported from Ultralytics YOLOv12.
+Object detection is performed with **OpenCV DNN** on **ONNX** models exported from **Ultralytics YOLO26** (NMS-free, latest as of 2026).
 
 ![Demo](assets/preview.png)
 
@@ -10,7 +10,7 @@ Object detection is performed with **OpenCV DNN** on **ONNX** models exported fr
 
 ## Features
 
-- Real-time multi-vehicle detection (car, motorcycle, bus, truck)
+- Real-time multi-vehicle detection (car, motorcycle, bus, truck) via **YOLO26**
 - Monocular distance estimation via perspective projection & with displacement correction
 - Three trapezoidal ROI lanes: **LEFT**, **MAIN**, **RIGHT**
 - Adaptive warning thresholds per lane
@@ -18,10 +18,11 @@ Object detection is performed with **OpenCV DNN** on **ONNX** models exported fr
 - Colour-coded distance labels (red = warning, green = safe)
 - “VEHICLE TOO CLOSE!” banner
 - Annotated MP4
+- NMS-free friendly (YOLO26 end-to-end); light NMS retained as safety net
 
 ---
 
-## Requirements (macOS)
+## Requirements (macOS / Apple M4)
 
 ```bash
 # Homebrew
@@ -35,16 +36,30 @@ OpenCV ≥ 4.5 with the `dnn` module is required.
 
 ---
 
-## Export models
+## Export model (YOLO26)
 
 ```bash
-pip install ultralytics
-yolo export model=yolo12x.pt format=onnx imgsz=640
+pip install -U ultralytics
+yolo export model=yolo26x.pt format=onnx imgsz=640 simplify=True
 
-# Place the resulting .onnx files into the models/ folder
+# Place the resulting .onnx file into the models/ folder
 mkdir -p models
-mv yolo12x.onnx models/
-mv vehicle-plate.onnx models/
+mv yolo26x.onnx models/
+```
+
+Faster / smaller options:
+
+| Model | Use case |
+|-------|----------|
+| `yolo26n.pt` | Max speed (edge) |
+| `yolo26s.pt` | Good balance |
+| `yolo26m.pt` | Higher accuracy |
+| `yolo26x.pt` | Best accuracy (default) |
+
+Or use the helper script:
+
+```bash
+./scripts/export_models.sh yolo26x.pt
 ```
 
 ---
@@ -64,7 +79,7 @@ make -j$(sysctl -n hw.ncpu)
 ```bash
 ./build/vehicle_distance \
   --video assets/sample.mp4 \
-  --vehicle-model models/yolo12x.onnx \
+  --vehicle-model models/yolo26x.onnx \
   --plate-model models/rfdetr-custom.onnx \
   --output assets/output.mp4
 ```
@@ -74,7 +89,7 @@ make -j$(sysctl -n hw.ncpu)
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--video` / `-v` | `dashcam_video.mov` | Input video |
-| `--vehicle-model` | `models/yolo12x.onnx` | Vehicle detector ONNX |
+| `--vehicle-model` | `models/yolo26x.onnx` | YOLO26 detector ONNX |
 | `--plate-model` | `models/vehicle-plate.onnx` | Plate detector ONNX (optional) |
 | `--output` / `-o` | `Vehicle-Distance-Measurement.mp4` | Output video |
 | `--no-window` | – | Disable live preview |
@@ -130,6 +145,19 @@ where \(\alpha = 0.0001\) and \(\delta\) is the Euclidean distance from the vehi
 
 ---
 
+## Why YOLO26?
+
+- Native **NMS-free** end-to-end detection → simpler, more stable latency
+- Higher COCO mAP than YOLOv8 / YOLOv12 at similar size
+- Up to ~43% faster on CPU (great for Apple M4)
+- Cleaner ONNX export (no DFL)
+
+The post-processor still applies a light NMS as a safety net; you can lower
+`NMS_THRESHOLD` in `config.hpp` or skip it later if the model output is already
+clean.
+
+---
+
 ## License
 
 This C++ port is provided for educational / research purposes.  
@@ -141,5 +169,5 @@ Respect the original license terms when redistributing or using the work.
 ## Acknowledgements
 
 - Original author: [Kemal Kılıçaslan](https://github.com/kemalkilicaslan)
-- Ultralytics YOLO team
+- Ultralytics YOLO26 team
 - OpenCV community

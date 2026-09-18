@@ -22,7 +22,7 @@ constexpr float PLATE_CONFIDENCE        = 0.475f;
 constexpr float MAX_DISPLAY_DISTANCE    = 15.0f;
 constexpr float MAIN_ROI_WARNING_THRESH = 5.0f;
 
-// COCO class IDs used by the original YOLOv12 model
+// COCO class IDs used by the YOLO26 model
 enum class VehicleClass : int {
     Car        = 2,
     Motorcycle = 3,

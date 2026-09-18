@@ -5,7 +5,7 @@
  *
  * This port keeps the same geometry, ROI zones, distance formula and
  * visualisation style. Detection uses OpenCV DNN with ONNX models
- * exported from Ultralytics YOLOv12.
+ * exported from Ultralytics YOLO26.
  *
  * Build (Apple Silicon / M4):
  *   mkdir build && cd build
@@ -13,12 +13,12 @@
  *   make -j$(sysctl -n hw.ncpu)
  *
  * Export models first (Python side):
- *   yolo export model=yolo12x.pt format=onnx imgsz=640
+ *   yolo export model=yolo26x.pt format=onnx imgsz=640
  *   yolo export model=vehicle-plate.pt format=onnx imgsz=640
  *
  * Usage:
  *   ./vehicle_distance --video dashcam_video.mov \
- *                      --vehicle-model models/yolo12x.onnx \
+ *                      --vehicle-model models/yolo26x.onnx \
  *                      --plate-model models/vehicle-plate.onnx \
  *                      --output Vehicle-Distance-Measurement.mp4
  */
@@ -40,7 +40,7 @@ using namespace vdm;
 
 struct Args {
     std::string videoPath    = "dashcam_video.mov";
-    std::string vehicleModel = "models/yolo12x.onnx";
+    std::string vehicleModel = "models/yolo26x.onnx";
     std::string plateModel;   // empty = disabled (optional)
     std::string outputPath   = "Vehicle-Distance-Measurement.mp4";
     bool showWindow = true;
@@ -73,7 +73,7 @@ Args parseArgs(int argc, char** argv) {
             std::cout <<
                 "Usage: vehicle_distance [options]\n"
                 "  --video PATH          Input video (default: dashcam_video.mov)\n"
-                "  --vehicle-model PATH  YOLOv12 ONNX (default: models/yolo12x.onnx)\n"
+                "  --vehicle-model PATH  YOLO26 ONNX (default: models/yolo26x.onnx)\n"
                 "  --plate-model PATH    Plate detector ONNX (optional; omit or use 'none' to skip)\n"
                 "  --no-plates           Disable plate blurring even if a model is given\n"
                 "  --output PATH         Output video (default: Vehicle-Distance-Measurement.mp4)\n"
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
     YoloDetector vehicleDetector(args.vehicleModel, VEHICLE_CONFIDENCE);
     if (!vehicleDetector.isLoaded()) {
         std::cerr << "Failed to load vehicle model. Export with:\n"
-                  << "  yolo export model=yolo12x.pt format=onnx imgsz=640\n";
+                  << "  yolo export model=yolo26x.pt format=onnx imgsz=640\n";
         return 1;
     }
 
